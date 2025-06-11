@@ -1,0 +1,14 @@
+Flask
+Flask-CORS
+Flask-SocketIO
+pandas
+python-SocketIO
+python-engineio
+requests
+asyncio
+websockets
+json
+ssl
+numpy
+TA-lib
+freqtrade

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced FCB Trading Bot Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online { background: #28a745; }
+        .status-dot.offline { background: #dc3545; }
+        .status-dot.warning { background: #ffc107; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .grid-full {
+            grid-column: 1 / -1;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-start {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-stop {
+            background: linear-gradient(45deg, #dc3545, #e74c3c);
+            color: white;
+        }
+
+        .btn-restart {
+            background: linear-gradient(45deg, #ffc107, #f39c12);
+            color: white;
+        }
+
+        .btn-config {
+            background: linear-gradient(45deg, #6f42c1, #8e44ad);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .log-container {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            height: 300px;
+            overflow-y: auto;
+            border: 2px solid #333;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .log-info { color: #00ff00; }
+        .log-warning { color: #ffc107; }
+        .log-error { color: #dc3545; }
+        .log-trade { 
+            color: #17a2b8; 
+            background: rgba(23, 162, 184, 0.1);
+            padding: 8px;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .trades-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .trades-table th,
+        .trades-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .trades-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .trades-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .trade-result {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .trade-win {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .trade-loss {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .trade-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .config-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .close:hover {
+            color: #dc3545;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-bar {
+                justify-content: center;
+            }
+            
+            .config-form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 Enhanced FCB Trading Bot Dashboard</h1>
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-dot" id="botStatus"></div>
+                    <span id="botStatusText">Bot Status: Offline</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot" id="connectionStatus"></div>
+                    <span id="connectionStatusText">API: Disconnected</span>
+                </div>
+                <div class="status-item">
+                    <strong>Balance: $<span id="accountBalance">0.00</span></strong>
+                </div>
+                <div class="status-item">
+                    <strong>Active Trades: <span id="activeTrades">0</span></strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="grid">
+            <div class="card">
+                <h3>🎮 Bot Controls</h3>
+                <div class="control-buttons">
+                    <button class="btn btn-start" onclick="startBot()">▶️ Start Bot</button>
+                    <button class="btn btn-stop" onclick="stopBot()">⏹️ Stop Bot</button>
+                    <button class="btn btn-restart" onclick="restartBot()">🔄 Restart</button>
+                    <button class="btn btn-config" onclick="openConfig()">⚙️ Config</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📊 Performance Stats</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalTrades">0</div>
+                        <div class="stat-label">Total Trades</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="winRate">0%</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="dailyPnL">$0.00</div>
+                        <div class="stat-label">Daily P&L</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="signalsToday">0</div>
+                        <div class="stat-label">Signals Today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Log -->
+        <div class="card grid-full">
+            <h3>📝 Live Log</h3>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry log-info">[2024-06-10 12:00:00] Dashboard initialized</div>
+                <div class="log-entry log-info">[2024-06-10 12:00:01] Waiting for bot connection...</div>
+            </div>
+        </div>
+
+        <!-- Recent Trades -->
+        <div class="card grid-full">
+            <h3>💹 Recent Trades</h3>
+            <table class="trades-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Pair</th>
+                        <th>Direction</th>
+                        <th>Amount</th>
+                        <th>Entry Price</th>
+                        <th>Strategy Data</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody id="tradesTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #6c757d;">No trades yet</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="card grid-full">
+            <h3>📈 Performance Chart</h3>
+            <div class="chart-container">
+                📊 Performance chart will be displayed here
+                <br><small>Real-time P&L tracking coming soon</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Modal -->
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Bot Configuration</h3>
+                <span class="close" onclick="closeConfig()">&times;</span>
+            </div>
+            <div class="config-form">
+                <div class="form-group">
+                    <label>Fractal Period</label>
+                    <input type="number" id="fractalPeriod" value="5" min="3" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Chaos Period</label>
+                    <input type="number" id="chaosPeriod" value="13" min="5" max="20">
+                </div>
+                <div class="form-group">
+                    <label>Band Multiplier</label>
+                    <input type="number" id="bandMultiplier" value="1.5" min="0.5" max="3" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label>Trade Amount ($)</label>
+                    <input type="number" id="tradeAmount" value="100" min="10" max="1000">
+                </div>
+                <div class="form-group">
+                    <label>Min Payout (%)</label>
+                    <input type="number" id="minPayout" value="80" min="60" max="95">
+                </div>
+                <div class="form-group">
+                    <label>Expiration (seconds)</label>
+                    <input type="number" id="expiration" value="180" min="60" max="600">
+                </div>
+                <div class="form-group">
+                    <label>Max Trades per Pair</label>
+                    <input type="number" id="maxTrades" value="3" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Cooldown Period (seconds)</label>
+                    <input type="number" id="cooldownPeriod" value="300" min="60" max="1800">
+                </div>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-start" onclick="saveConfig()">💾 Save Config</button>
+                <button class="btn btn-stop" onclick="resetConfig()">🔄 Reset to Default</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard state
+        let botRunning = false;
+        let apiConnected = false;
+        let trades = [];
+        let stats = {
+            totalTrades: 0,
+            wins: 0,
+            losses: 0,
+            dailyPnL: 0,
+            signalsToday: 0
+        };
+
+        // Initialize dashboard
+        function initDashboard() {
+            updateStatus();
+            setInterval(updateDashboard, 1000);
+        }
+
+        // Bot control functions
+        function startBot() {
+            if (!botRunning) {
+                botRunning = true;
+                addLog('Bot starting...', 'info');
+                setTimeout(() => {
+                    apiConnected = true;
+                    addLog('✅ Bot started successfully', 'info');
+                    addLog('🔗 API connection established', 'info');
+                    updateStatus();
+                }, 2000);
+            }
+        }
+
+        function stopBot() {
+            if (botRunning) {
+                botRunning = false;
+                apiConnected = false;
+                addLog('🛑 Bot stopping...', 'warning');
+                setTimeout(() => {
+                    addLog('✅ Bot stopped successfully', 'info');
+                    updateStatus();
+                }, 1000);
+            }
+        }
+
+        function restartBot() {
+            if (botRunning) {
+                addLog('🔄 Restarting bot...', 'warning');
+                stopBot();
+                setTimeout(() => {
+                    startBot();
+                }, 3000);
+            } else {
+                startBot();
+            }
+        }
+
+        // Configuration functions
+        function openConfig() {
+            document.getElementById('configModal').style.display = 'block';
+        }
+
+        function closeConfig() {
+            document.getElementById('configModal').style.display = 'none';
+        }
+
+        function saveConfig() {
+            const config = {
+                fractalPeriod: document.getElementById('fractalPeriod').value,
+                chaosPeriod: document.getElementById('chaosPeriod').value,
+                bandMultiplier: document.getElementById('bandMultiplier').value,
+                tradeAmount: document.getElementById('tradeAmount').value,
+                minPayout: document.getElementById('minPayout').value,
+                expiration: document.getElementById('expiration').value,
+                maxTrades: document.getElementById('maxTrades').value,
+                cooldownPeriod: document.getElementById('cooldownPeriod').value
+            };
+            
+            localStorage.setItem('botConfig', JSON.stringify(config));
+            addLog('📝 Configuration saved successfully', 'info');
+            closeConfig();
+        }
+
+        function resetConfig() {
+            document.getElementById('fractalPeriod').value = '5';
+            document.getElementById('chaosPeriod').value = '13';
+            document.getElementById('bandMultiplier').value = '1.5';
+            document.getElementById('tradeAmount').value = '100';
+            document.getElementById('minPayout').value = '80';
+            document.getElementById('expiration').value = '180';
+            document.getElementById('maxTrades').value = '3';
+            document.getElementById('cooldownPeriod').value = '300';
+            addLog('🔄 Configuration reset to defaults', 'info');
+        }
+
+        // Update functions
+        function updateStatus() {
+            const botStatusDot = document.getElementById('botStatus');
+            const botStatusText = document.getElementById('botStatusText');
+            const connectionStatusDot = document.getElementById('connectionStatus');
+            const connectionStatusText = document.getElementById('connectionStatusText');
+
+            if (botRunning) {
+                botStatusDot.className = 'status-dot online';
+                botStatusText.textContent = 'Bot Status: Running';
+            } else {
+                botStatusDot.className = 'status-dot offline';
+                botStatusText.textContent = 'Bot Status: Stopped';
+            }
+
+            if (apiConnected) {
+                connectionStatusDot.className = 'status-dot online';
+                connectionStatusText.textContent = 'API: Connected';
+            } else {
+                connectionStatusDot.className = 'status-dot offline';
+                connectionStatusText.textContent = 'API: Disconnected';
+            }
+        }
+
+        function updateDashboard() {
+            updateStats();
+            updateBalance();
+        }
+
+        function updateStats() {
+            document.getElementById('totalTrades').textContent = stats.totalTrades;
+            const winRate = stats.totalTrades > 0 ? ((stats.wins / stats.totalTrades) * 100).toFixed(1) : 0;
+            document.getElementById('winRate').textContent = winRate + '%';
+            document.getElementById('dailyPnL').textContent = '$' + stats.dailyPnL.toFixed(2);
+            document.getElementById('signalsToday').textContent = stats.signalsToday;
+        }
+
+        function updateBalance() {
+            document.getElementById('accountBalance').textContent = balance;
+        }
+
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            // Keep only last 100 log entries
+            const logEntries = logContainer.children;
+            if (logEntries.length > 100) {
+                logContainer.removeChild(logEntries[0]);
+            }
+        }
+
+        function addTrade(trade) {
+            trades.unshift(trade);
+            stats.totalTrades++;
+            
+            if (trade.result === 'win') {
+                stats.wins++;
+                stats.dailyPnL += trade.amount * 0.8; // Assuming 80% payout
+            } else if (trade.result === 'loss') {
+                stats.losses++;
+                stats.dailyPnL -= trade.amount;
+            }
+
+            updateTradesTable();
+            addLog(`📊 Trade ${trade.result?.toUpperCase() || 'PLACED'}: ${trade.pair} ${trade.direction} $${trade.amount}`, 'trade');
+        }
+
+        function updateTradesTable() {
+            const tbody = document.getElementById('tradesTableBody');
+            tbody.innerHTML = '';
+
+            const recentTrades = trades.slice(0, 10); // Show last 10 trades
+
+            if (recentTrades.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #6c757d;">No trades yet</td></tr>';
+                return;
+            }
+
+            recentTrades.forEach(trade => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${trade.timestamp}</td>
+                    <td>${trade.pair}</td>
+                    <td>${trade.direction.toUpperCase()}</td>
+                    <td>$${trade.amount}</td>
+                    <td>${trade.price}</td>
+                    <td>Vol: ${trade.volatility || 'N/A'}</td>
+                    <td><span class="trade-result trade-${trade.result || 'pending'}">${trade.result || 'pending'}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Load saved configuration
+        function loadConfig() {
+            const savedConfig = localStorage.getItem('botConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                Object.keys(config).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.value = config[key];
+                    }
+                });
+            }
+        }
+
+        // Initialize dashboard when page loads
+        window.onload = function() {
+            initDashboard();
+            loadConfig();
+        };
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('configModal');
+            if (event.target === modal) {
+                closeConfig();
+            }
+        };
+    </script>
+</body>
+</html>

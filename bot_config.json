@@ -1,0 +1,10 @@
+{
+  "fractal_period": 5,
+  "chaos_period": 13,
+  "band_multiplier": 1.5,
+  "min_payout": 80,
+  "expiration": 180,
+  "max_trades_per_pair": 3,
+  "cooldown_period": 300,
+  "trade_amount": 100
+}
