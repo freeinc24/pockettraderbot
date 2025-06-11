@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from collections import deque
 import warnings
+from shared_state import BotIntegration
 warnings.filterwarnings('ignore')
 
 global_value.loglevel = 'INFO'
